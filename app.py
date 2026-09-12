@@ -1,5 +1,6 @@
 import string
 import random
+import os
 from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, join_room, emit
 
@@ -10,6 +11,8 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 # In-memory storage for rooms
 rooms = {}
 
+BACKEND_URL = os.environ.get('BACKEND_URL', '')
+
 def generate_room_code(length=6):
     letters = string.ascii_uppercase + string.digits
     while True:
@@ -19,13 +22,13 @@ def generate_room_code(length=6):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', backend_url=BACKEND_URL)
 
 @app.route('/host/<code>')
 def host(code):
     if code not in rooms:
         return "Room not found", 404
-    return render_template('host.html', code=code)
+    return render_template('host.html', code=code, backend_url=BACKEND_URL)
 
 @app.route('/team/<code>/<team_id>')
 def team(code, team_id):
@@ -33,7 +36,7 @@ def team(code, team_id):
         return "Room not found", 404
     if team_id not in rooms[code]['teams']:
         return "Team not found", 404
-    return render_template('team.html', code=code, team_id=team_id, team_name=rooms[code]['teams'][team_id]['name'])
+    return render_template('team.html', code=code, team_id=team_id, team_name=rooms[code]['teams'][team_id]['name'], backend_url=BACKEND_URL)
 
 
 # Socket.IO Event Handlers

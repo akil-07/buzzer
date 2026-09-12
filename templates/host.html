@@ -35,7 +35,8 @@
 
 {% block scripts %}
 <script>
-    const socket = io({
+    const backendUrl = '{{ backend_url }}' || undefined;
+    const socket = io(backendUrl, {
         transports: ['websocket', 'polling']
     });
     const roomCode = '{{ code }}';
