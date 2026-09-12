@@ -44,6 +44,11 @@
     // Join as host
     socket.emit('join_host', { code: roomCode });
     
+    socket.on('room_error', (err) => {
+        alert(err.message);
+        window.location.href = '/';
+    });
+    
     // DOM Elements
     const addTeamBtn = document.getElementById('addTeamBtn');
     const teamNameInput = document.getElementById('teamNameInput');

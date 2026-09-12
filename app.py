@@ -26,17 +26,11 @@ def index():
 
 @app.route('/host/<code>')
 def host(code):
-    if code not in rooms:
-        return "Room not found", 404
     return render_template('host.html', code=code, backend_url=BACKEND_URL)
 
 @app.route('/team/<code>/<team_id>')
 def team(code, team_id):
-    if code not in rooms:
-        return "Room not found", 404
-    if team_id not in rooms[code]['teams']:
-        return "Team not found", 404
-    return render_template('team.html', code=code, team_id=team_id, team_name=rooms[code]['teams'][team_id]['name'], backend_url=BACKEND_URL)
+    return render_template('team.html', code=code, team_id=team_id, team_name="Connecting...", backend_url=BACKEND_URL)
 
 
 # Socket.IO Event Handlers
@@ -61,6 +55,8 @@ def on_join_host(data):
         join_room(code)
         emit('update_teams', {'teams': list(rooms[code]['teams'].values())}, room=request.sid)
         emit('buzzer_state', {'active': rooms[code]['buzzer_active'], 'buzzes': rooms[code]['buzzes']}, room=request.sid)
+    else:
+        emit('room_error', {'message': 'Room not found'}, room=request.sid)
 
 @socketio.on('add_team')
 def on_add_team(data):
@@ -80,6 +76,9 @@ def on_join_team(data):
         rooms[code]['teams'][team_id]['joined'] = True
         emit('update_teams', {'teams': list(rooms[code]['teams'].values())}, room=code)
         emit('buzzer_state', {'active': rooms[code]['buzzer_active'], 'buzzes': rooms[code]['buzzes']}, room=request.sid)
+        emit('team_info', {'team_name': rooms[code]['teams'][team_id]['name']}, room=request.sid)
+    else:
+        emit('room_error', {'message': 'Room or Team not found'}, room=request.sid)
 
 @socketio.on('activate_buzzer')
 def on_activate_buzzer(data):

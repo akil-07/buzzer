@@ -3,7 +3,7 @@
 {% block title %}Team Screen - {{ team_name }}{% endblock %}
 
 {% block content %}
-    <h2>Team: <span style="color: var(--primary-color);">{{ team_name }}</span></h2>
+    <h2>Team: <span id="teamNameDisplay" style="color: var(--primary-color);">{{ team_name }}</span></h2>
     <p id="statusText">Waiting for host to activate buzzer...</p>
     
     <div class="buzzer-container">
@@ -28,6 +28,17 @@
     
     // Join as team
     socket.emit('join_team', { code: roomCode, team_id: teamId });
+    
+    socket.on('team_info', (data) => {
+        const nameDisplay = document.getElementById('teamNameDisplay');
+        if (nameDisplay) nameDisplay.innerText = data.team_name;
+        document.title = "Team Screen - " + data.team_name;
+    });
+    
+    socket.on('room_error', (err) => {
+        alert(err.message);
+        window.location.href = '/';
+    });
     
     const buzzBtn = document.getElementById('buzzBtn');
     const statusText = document.getElementById('statusText');
